@@ -1,8 +1,8 @@
-# Projet Data 🚀
+# Big Data Project 🚀
 
-Projet du module Big Data X3, <b>Groupe 1</b>
+Big Data Project X3, <b>Group 1</b>
 
-## Membres du groupe
+## Group members
 
 - NGANKAM Paul-Henry
 - BEHLE Ralph
