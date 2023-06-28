@@ -1,10 +1,10 @@
-import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import random
+import randomGraphGeneretor as rg
 
 # Create a test graph
-graph = nx.complete_graph(10)
+graph = rg.graph_generetor
 # Add random weights
 nx.set_edge_attributes(
     graph, {e: {"weight": random.randint(1, 10)} for e in graph.edges}
