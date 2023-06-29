@@ -1,113 +1,142 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-import random
-import randomGraphGeneretor as rg
+import genetic_algorithm as ga
+import instance_generator as ig
+import pathfinder as pf
+import time
 
-# Create a test graph
-graph = rg.graph_generetor
-# Add random weights
+# Algorith hyperparameters
+POPULATION_SIZE = 100
+N_GENERATIONS = 100
+MUTATION_RATE = 0.01
+
+# Generate a test graph and a random subgraph
+graph, subgraph = ig.generate_instance(10, 0.4, 5, 8)
+complete_subgraph = nx.transitive_closure(subgraph)
+
+graph_matrix = nx.adjacency_matrix(graph).todense().tolist()
+subgraph_matrix = nx.adjacency_matrix(subgraph).todense().tolist()
+
 nx.set_edge_attributes(
-    graph, {e: {"weight": random.randint(1, 10)} for e in graph.edges}
+    complete_subgraph,
+    {
+        e: {"weight": pf.shortest_distance(graph_matrix, e[0], e[1])}
+        for e in complete_subgraph.edges
+    },
 )
 
-# Extract adjacency matrix of the graph
-matrix = nx.adjacency_matrix(graph).todense()
-n = len(matrix)  # Number of nodes (cities)
+complete_subgraph_matrix = nx.adjacency_matrix(complete_subgraph).todense().tolist()
 
-
-# Calculate the cost of a tour
-def cost(tour):
-    total_distance = 0
-    for i in range(n - 1):
-        total_distance += matrix[tour[i]][tour[i + 1]]
-    total_distance += matrix[tour[-1]][tour[0]]  # Retour à la première ville
-    return total_distance
-
-
-# Initialize a random population of solutions
-def initialize_population(population_size):
-    population = []
-    for _ in range(population_size):
-        individual = list(range(n))
-        random.shuffle(individual)
-        population.append(individual)
-    return population
-
-
-# Selection
-def selection(population):
-    fitness_values = []
-    for individual in population:
-        fitness_values.append(1 / cost(individual))
-    sum_fitness = sum(fitness_values)
-    probabilities = [fitness / sum_fitness for fitness in fitness_values]
-    parents = random.choices(population, probabilities, k=2)
-    return parents
-
-
-def crossover(parents):
-    parent1, parent2 = parents
-    child = [None] * n
-    start, end = sorted(random.sample(range(n), 2))
-    child[start:end] = parent1[start:end]
-    remaining_cities = [city for city in parent2 if city not in child[start:end]]
-    index = 0
-    for i in range(n):
-        if child[i] is None:
-            child[i] = remaining_cities[index]
-            index += 1
-    return child
-
-
-def mutate(individual, mutation_rate):
-    for i in range(n):
-        if random.random() < mutation_rate:
-            j = random.randint(0, n - 1)
-            individual[i], individual[j] = (
-                individual[j],
-                individual[i],
-            )
-    return individual
-
-
-def genetic_algorithm(population_size, generations, mutation_rate):
-    population = initialize_population(population_size)
-    best_individual = None
-    best_fitness = float("inf")
-
-    for _ in range(generations):
-        new_population = []
-
-        while len(new_population) < population_size:
-            parents = selection(population)
-            child = crossover(parents)
-            child = mutate(child, mutation_rate)
-            new_population.append(child)
-
-        population = new_population
-
-        for individual in population:
-            fitness = cost(individual)
-            if fitness < best_fitness:
-                best_fitness = fitness
-                best_individual = individual
-
-    return best_individual, best_fitness
-
-
-# Exemple d'utilisation
-population_size = 100
-generations = 100
-mutation_rate = 0.01
-
-best_solution, best_distance = genetic_algorithm(
-    population_size, generations, mutation_rate
+best_tour, best_distance = ga.genetic_algorithm(
+    complete_subgraph_matrix, POPULATION_SIZE, N_GENERATIONS, MUTATION_RATE
 )
 
+# Indexed solution
+node_list = sorted(list(complete_subgraph))
+indexed_tour = [node_list[idx] for idx in best_tour]
+indexed_tour.append(indexed_tour[0])
 
-print("Meilleure solution trouvé :", best_solution)
-print("Distance parcourue :", best_distance)
+print(indexed_tour)
+print(complete_subgraph_matrix)
+print(ga.cost(complete_subgraph_matrix, best_tour))
 
-nx.draw(graph, with_labels=True)
-print(matrix)
+final_tour = indexed_tour.copy()
+
+# Replace inexistant edges in the tour with the shortest path
+for i in range(len(final_tour)):
+    if graph_matrix[final_tour[i]][final_tour[i + 1]] == 0:
+        final_tour[i : i + 2] = pf.shortest_path(
+            graph_matrix, final_tour[i], final_tour[i + 1]
+        )
+
+print(final_tour)
+
+
+# Draw graphs
+pos = nx.spring_layout(graph)
+
+# Draw base graph
+colors = []
+
+graph_edge_labels = dict(
+    [
+        (
+            (
+                u,
+                v,
+            ),
+            d["weight"],
+        )
+        for u, v, d in graph.edges(data=True)
+    ]
+)
+
+for node in graph:
+    if node in subgraph:
+        colors.append("green")
+    else:
+        colors.append("blue")
+
+plt.figure(1)
+nx.draw(graph, pos, node_color=colors, with_labels=True)
+nx.draw_networkx_edge_labels(
+    graph,
+    pos,
+    edge_labels=graph_edge_labels,
+)
+
+# Draw subgraph
+subgraph_edge_labels = dict(
+    [
+        (
+            (
+                u,
+                v,
+            ),
+            d["weight"],
+        )
+        for u, v, d in subgraph.edges(data=True)
+    ]
+)
+
+plt.figure(2)
+nx.draw(
+    subgraph,
+    pos,
+    node_color=["green"] * len(subgraph),
+    with_labels=True,
+)
+nx.draw_networkx_edge_labels(
+    subgraph,
+    pos,
+    edge_labels=subgraph_edge_labels,
+)
+
+# Draw complete subgraph
+complete_subgraph_edge_labels = dict(
+    [
+        (
+            (
+                u,
+                v,
+            ),
+            d["weight"],
+        )
+        for u, v, d in complete_subgraph.edges(data=True)
+    ]
+)
+
+plt.figure(3)
+nx.draw(
+    complete_subgraph,
+    pos,
+    node_color=["green"] * len(complete_subgraph),
+    with_labels=True,
+)
+nx.draw_networkx_edge_labels(
+    complete_subgraph,
+    pos,
+    edge_labels=complete_subgraph_edge_labels,
+)
+
 plt.show()
