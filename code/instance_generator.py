@@ -2,6 +2,17 @@ import numpy as np
 import networkx as nx
 import random
 import matplotlib.pyplot as plt
+import json
+import string
+
+
+def save_json(g):
+    file_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=6))
+    graph_data = nx.node_link_data(g)
+
+    f = open(f"data/instances/{file_name}.json", "w")
+    json.dump(graph_data, f)
+    f.close()
 
 
 def generate_adj_matrix(n, p):
@@ -43,5 +54,7 @@ def generate_instance(n, p, min, max, n_vehicles):
         )  # génère une liste de nœuds aléatoires à partir du graphe G.
         subgraph = G.subgraph(subgraph_nodes)
         subgraphs.append(subgraph)
+
+    save_json(G)
 
     return G, subgraphs
