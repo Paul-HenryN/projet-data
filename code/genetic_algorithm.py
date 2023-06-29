@@ -18,6 +18,10 @@ def initialize_population(matrix, population_size):
     for _ in range(population_size):
         individual = list(range(len(matrix)))
         random.shuffle(individual)
+
+        while cost(matrix, individual) == 0:
+            random.shuffle(individual)
+
         population.append(individual)
     return population
 

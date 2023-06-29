@@ -4,8 +4,7 @@ import random
 import matplotlib.pyplot as plt
 
 
-def generate_instance(n, p, min, max, n_vehicles):
-    # Génération de la matrice d'adjacence aléatoire pondérée
+def generate_adj_matrix(n, p):
     adj_matrix = np.zeros((n, n))
 
     for i in range(n):
@@ -14,6 +13,23 @@ def generate_instance(n, p, min, max, n_vehicles):
                 weight = random.randint(1, 10)
                 adj_matrix[i][j] = weight
                 adj_matrix[j][i] = weight
+
+    return adj_matrix
+
+
+def generate_instance(n, p, min, max, n_vehicles):
+    # Génération de la matrice d'adjacence aléatoire pondérée
+    adj_matrix = np.zeros((n, n))
+    is_valid = False
+
+    while not is_valid:
+        adj_matrix = generate_adj_matrix(n, p)
+        is_valid = True
+
+        for i in range(n):
+            if sum(adj_matrix[i]) == 0:
+                is_valid = False
+                break
 
     # Création d'un graphe vide
     G = nx.from_numpy_array(adj_matrix)
