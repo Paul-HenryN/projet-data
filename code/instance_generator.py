@@ -4,7 +4,7 @@ import random
 import matplotlib.pyplot as plt
 
 
-def generate_instance(n, p, min, max):
+def generate_instance(n, p, min, max, n_vehicles):
     # Génération de la matrice d'adjacence aléatoire pondérée
     adj_matrix = np.zeros((n, n))
 
@@ -18,10 +18,14 @@ def generate_instance(n, p, min, max):
     # Création d'un graphe vide
     G = nx.from_numpy_array(adj_matrix)
 
-    # Génération du sous-graphe
-    subgraph_nodes = random.sample(
-        sorted(G.nodes()), k=random.randint(min, max)
-    )  # génère une liste de nœuds aléatoires à partir du graphe G.
-    subgraph = G.subgraph(subgraph_nodes)
+    subgraphs = []
 
-    return G, subgraph
+    for _ in range(n_vehicles):
+        # Génération du sous-graphe
+        subgraph_nodes = random.sample(
+            sorted(G.nodes()), k=random.randint(min, max)
+        )  # génère une liste de nœuds aléatoires à partir du graphe G.
+        subgraph = G.subgraph(subgraph_nodes)
+        subgraphs.append(subgraph)
+
+    return G, subgraphs
