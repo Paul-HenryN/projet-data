@@ -4,10 +4,10 @@ import random
 import matplotlib.pyplot as plt
 
 def graph_generetor():
-    n = int(input("Entrez le nombre de villes : "))
-    p = float(input("Entrez la probabilité d'existence d'une route : "))
+    n = int(input("Enter the number of cities : "))
+    p = float(input("Enter the probability of existence of a route : "))
 
-    # Génération de la matrice d'adjacence aléatoire pondérée
+    # Generation of the weighted random adjacency matrix
     adj_matrix = np.zeros((n, n))
     for i in range(n):
         for j in range(i + 1, n):
@@ -16,34 +16,34 @@ def graph_generetor():
                 adj_matrix[i][j] = weight
                 adj_matrix[j][i] = weight
 
-    # Création d'un graphe vide
+    #Creating an empty graph
     G = nx.Graph()
 
-    # Ajout des arêtes avec les poids à partir de la matrice d'adjacence
+    # Adding edges with weights from the adjacency matrix
     for i in range(n):
         for j in range(i + 1, n):
             if adj_matrix[i][j] != 0:
                 G.add_edge(i, j, weight=adj_matrix[i][j])
 
-    # Affichage de la matrice d'adjacence et du graphe
-    print("Matrice d'adjacence :")
+    # Displaying the adjacency matrix and graph
+    print("adjacency matrix :")
     print(adj_matrix)
     nx.draw(G, with_labels=True)
     plt.show()
 
-    # Génération du sous-graphe
-    subgraph_nodes = random.sample(sorted(G.nodes()), k=random.randint(1, len(G))) #génère une liste de nœuds aléatoires à partir du graphe G.
+    # Subgraph generation
+    subgraph_nodes = random.sample(sorted(G.nodes()), k=random.randint(1, len(G))) #generates a list of random nodes from the graph G.
     subgraph = G.subgraph(subgraph_nodes)
 
-    # Extraction de la matrice d'adjacence du sous-graphe à partir de la matrice d'adjacence du graphe général
+    # Extracting the sub-graph adjacency matrix from the general graph adjacency matrix
     subgraph_adj_matrix = adj_matrix[np.ix_(subgraph_nodes, subgraph_nodes)]
 
-    # Affichage du sous-graphe et de sa matrice d'adjacence
-    print("Sous-graphe :")
+    # Displaying the subgraph and its adjacency matrix
+    print("subgraph:")
     nx.draw(subgraph, with_labels=True)
     plt.show()
 
-    print("Matrice d'adjacence du sous-graphe :")
+    print("Subgraph adjacency matrix :")
     print(subgraph_adj_matrix)
 
 
