@@ -1,6 +1,5 @@
 library(readxl)
 
-
 #Specifying the excel file location
 path <- "C:/Users/hp/Documents/X3/U.E_5_Traitement_de_données/Projet_DATA/projet-data/data/sample.xlsx"
 
